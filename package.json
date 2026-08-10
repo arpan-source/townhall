@@ -10,8 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mantine/core": "^9.5.1",
+    "@mantine/dates": "^9.5.1",
+    "@mantine/hooks": "^9.5.1",
+    "@mantine/notifications": "^9.5.1",
     "@supabase/supabase-js": "^2.112.1",
+    "@tabler/icons-react": "^3.46.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-query": "^5.101.4",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.21",
     "lucide-react": "^1.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
