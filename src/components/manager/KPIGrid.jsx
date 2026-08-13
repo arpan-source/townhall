@@ -3,22 +3,16 @@ import { Card, Group, SimpleGrid, Text, ThemeIcon } from "@mantine/core";
 import {
   IconActivity,
   IconCircleCheck,
+  IconClock,
   IconAlertTriangle,
-  IconTarget,
 } from "@tabler/icons-react";
 
-export default function KPIGrid({ stats, onTotalClick }) {
+export default function KPIGrid({ stats, onKpiClick }) {
   if (!stats) return null;
 
   const cards = [
     {
-      label: "Total Initiatives",
-      value: stats.total,
-      description: "Across the organization",
-      icon: IconTarget,
-      color: "indigo",
-    },
-    {
+      key: "active",
       label: "In Progress",
       value: stats.active,
       description: "Currently being executed",
@@ -26,6 +20,7 @@ export default function KPIGrid({ stats, onTotalClick }) {
       color: "blue",
     },
     {
+      key: "completed",
       label: "Completed",
       value: stats.completed,
       description: "Successfully completed",
@@ -33,6 +28,15 @@ export default function KPIGrid({ stats, onTotalClick }) {
       color: "green",
     },
     {
+      key: "notStarted",
+      label: "Not Started",
+      value: stats.notStarted,
+      description: "Awaiting execution",
+      icon: IconClock,
+      color: "gray",
+    },
+    {
+      key: "overdue",
       label: "Overdue",
       value: stats.overdue,
       description: stats.overdue > 0 ? "Requires attention" : "Nothing overdue",
@@ -59,19 +63,11 @@ export default function KPIGrid({ stats, onTotalClick }) {
             withBorder
             radius="md"
             padding="lg"
+            onClick={() => onKpiClick(card.key)}
             style={{
-              cursor:
-                card.label === "Total Initiatives" ? "pointer" : "default",
+              cursor: "pointer",
             }}
-            style={{
-              cursor:
-                card.label === "Total Initiatives" ? "pointer" : "default",
-            }}
-            className={
-              card.label === "Total Initiatives"
-                ? "transition hover:shadow-md"
-                : undefined
-            }
+            className="transition hover:shadow-md"
           >
             <Group justify="space-between" align="flex-start">
               <div>

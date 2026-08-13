@@ -5,13 +5,11 @@ const DepartmentContext = createContext();
 
 export function DepartmentProvider({ children }) {
 
-  console.log("✅ DepartmentProvider Mounted");
 
   const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
 
-    console.log("🚀 Loading Departments...");
 
     async function loadDepartments() {
 
@@ -20,7 +18,6 @@ export function DepartmentProvider({ children }) {
         .select("*")
         .order("name");
 
-      console.log("Departments Data:", data);
       console.log("Departments Error:", error);
 
       if (data) {

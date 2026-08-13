@@ -4,7 +4,6 @@ import { supabase } from "../lib/supabase";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  console.log("✅ AuthProvider Mounted");
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,15 +15,12 @@ export function AuthProvider({ children }) {
   .eq("id", userId)
   .single();
 
-console.log(data);
 console.log(error);
-    console.log("Fetching profile for:", userId);
 
 const {
   data: { user },
 } = await supabase.auth.getUser();
 
-console.log("Authenticated user:", user);
     
     setProfile(data);
   }
@@ -67,14 +63,12 @@ console.log("Authenticated user:", user);
 //     });
 //   }
 async function login(email, password) {
-  console.log("Trying login:", email);
 
   const result = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  console.log(result);
 
   return result;
 }

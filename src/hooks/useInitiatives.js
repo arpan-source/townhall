@@ -4,21 +4,27 @@ import {
   createInitiative,
   updateInitiative,
   deleteInitiative,
+  getInitiativesWithLatestUpdates,
 } from "../services/initiativeService";
 
 export function useInitiatives() {
   const [initiatives, setInitiatives] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   async function loadInitiatives() {
     setLoading(true);
+    setError(null);
 
-    const { data, error } = await getInitiatives();
+    const { data, error } = await getInitiativesWithLatestUpdates();
 
     if (error) {
-      console.error(error);
+      console.error("Failed to load initiatives:", error);
+
+      setError(error);
+      setInitiatives([]);
     } else {
-      setInitiatives(data);
+      setInitiatives(data || []);
     }
 
     setLoading(false);
@@ -47,11 +53,15 @@ export function useInitiatives() {
   async function removeInitiative(id) {
     const { error } = await deleteInitiative(id);
 
-    if (!error) {
-      loadInitiatives();
+    if (error) {
+      console.error("removeInitiative error:", error);
+
+      return error;
     }
 
-    return error;
+    await loadInitiatives();
+
+    return null;
   }
 
   useEffect(() => {
@@ -61,6 +71,7 @@ export function useInitiatives() {
   return {
     initiatives,
     loading,
+    error,
     addInitiative,
     editInitiative,
     removeInitiative,

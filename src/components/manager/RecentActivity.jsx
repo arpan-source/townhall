@@ -18,36 +18,42 @@ function formatActivityTime(date) {
   const diffHours = Math.floor(diffMinutes / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMinutes < 1) {
-    return "Just now";
-  }
-
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m ago`;
-  }
-
-  if (diffHours < 24) {
-    return `${diffHours}h ago`;
-  }
-
-  if (diffDays < 7) {
-    return `${diffDays}d ago`;
-  }
+  if (diffMinutes < 1) return "Just now";
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
 
   return activityDate.toLocaleDateString();
 }
 
 export default function RecentActivity({
-  activities = [],
+  initiatives = [],
 }) {
+  const activities = initiatives
+    .filter((initiative) => initiative.latestUpdate)
+    .map((initiative) => ({
+      id: initiative.latestUpdate.id,
+      initiativeId: initiative.id,
+      initiativeTitle: initiative.title,
+      message: initiative.latestUpdate.message,
+      progress: initiative.latestUpdate.progress,
+      createdAt: initiative.latestUpdate.created_at,
+    }))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+    )
+    .slice(0, 8);
+
   return (
     <Card
       withBorder
       radius="md"
       padding="lg"
     >
-      <div className="mb-2">
-        <Title order={4}>
+      <div>
+        <Title order={3}>
           Recent Activity
         </Title>
 
@@ -56,14 +62,14 @@ export default function RecentActivity({
           c="dimmed"
           mt={3}
         >
-          Latest initiative updates
+          Latest updates from your initiatives
         </Text>
       </div>
 
       {activities.length === 0 ? (
         <Text
-          c="dimmed"
           size="sm"
+          c="dimmed"
           mt="lg"
         >
           No recent activity available.
@@ -77,7 +83,6 @@ export default function RecentActivity({
                 wrap="nowrap"
                 py="md"
               >
-                {/* Timeline */}
                 <div className="flex flex-col items-center pt-1">
                   <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0" />
 
@@ -86,7 +91,6 @@ export default function RecentActivity({
                   )}
                 </div>
 
-                {/* Activity */}
                 <div className="flex-1 min-w-0">
                   <Group
                     justify="space-between"
@@ -98,8 +102,7 @@ export default function RecentActivity({
                         fw={600}
                         size="sm"
                       >
-                        {activity.userName ||
-                          "Unknown user"}
+                        {activity.initiativeTitle}
                       </Text>
 
                       <Text
@@ -107,7 +110,7 @@ export default function RecentActivity({
                         mt={3}
                       >
                         {activity.message ||
-                          "Updated initiative"}
+                          "Initiative updated"}
                       </Text>
 
                       <Text
@@ -115,7 +118,8 @@ export default function RecentActivity({
                         c="dimmed"
                         mt={5}
                       >
-                        {activity.initiativeTitle}
+                        Progress:{" "}
+                        {activity.progress ?? 0}%
                       </Text>
                     </div>
 

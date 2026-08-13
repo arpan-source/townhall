@@ -21,15 +21,14 @@ import { Drawer } from "@mantine/core";
 
 export default function InitiativeDrawer({ initiatives, refresh }) {
   const { selectedInitiative, setSelectedInitiative } = useInitiative();
-  console.log(selectedInitiative);
 
   const [showWeeklyUpdate, setShowWeeklyUpdate] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [updates, setUpdates] = useState([]);
 
   const { departments } = useDepartments();
-  const { user } = useAuth();
-  console.log("Departments Context:", departments);
+  const { user, profile } = useAuth();
+  const isCEO = profile?.role === "CEO";
 
   const department = departments.find(
     (d) => d.id === selectedInitiative?.department_id,
@@ -102,63 +101,54 @@ export default function InitiativeDrawer({ initiatives, refresh }) {
     }
   }, [selectedInitiative]);
 
-  console.log("Department Found:", department);
 
   if (!selectedInitiative) return null;
 
   return (
-  <>
-    <Drawer
-      opened={!!selectedInitiative}
-      onClose={() => setSelectedInitiative(null)}
-      position="right"
-      size={520}
-      padding="xl"
-      title="Initiative Details"
-    >
-      <InitiativeHeader
-        initiative={selectedInitiative}
-        department={department}
+    <>
+      <Drawer
+        opened={!!selectedInitiative}
+        onClose={() => setSelectedInitiative(null)}
+        position="right"
+        size={520}
+        padding="xl"
+        title="Initiative Details"
+      >
+        <InitiativeHeader
+          initiative={selectedInitiative}
+          department={department}
+        />
+
+        <div className="mt-8 space-y-6">
+          <InitiativeOverview initiative={selectedInitiative} />
+
+          <InitiativeProgress initiative={selectedInitiative} />
+
+          <InitiativeActivity updates={updates} />
+
+          {!isCEO && (
+            <InitiativeActions
+              onWeeklyUpdate={() => setShowWeeklyUpdate(true)}
+              onEdit={() => setShowEditModal(true)}
+              onDelete={() => {
+              }}
+            />
+          )}
+        </div>
+      </Drawer>
+
+      <WeeklyUpdateModal
+        open={showWeeklyUpdate}
+        onClose={() => setShowWeeklyUpdate(false)}
+        onSave={handleWeeklyUpdate}
       />
 
-      <div className="mt-8 space-y-6">
-
-        <InitiativeOverview
-          initiative={selectedInitiative}
-        />
-
-        <InitiativeProgress
-          initiative={selectedInitiative}
-        />
-
-        <InitiativeActivity
-          updates={updates}
-        />
-
-        <InitiativeActions
-          onWeeklyUpdate={() => setShowWeeklyUpdate(true)}
-          onEdit={() => setShowEditModal(true)}
-          onDelete={() => {
-            console.log("Delete clicked");
-          }}
-        />
-
-      </div>
-
-    </Drawer>
-
-    <WeeklyUpdateModal
-      open={showWeeklyUpdate}
-      onClose={() => setShowWeeklyUpdate(false)}
-      onSave={handleWeeklyUpdate}
-    />
-
-    <EditInitiativeModal
-      open={showEditModal}
-      initiative={selectedInitiative}
-      onClose={() => setShowEditModal(false)}
-      onSave={handleEditInitiative}
-    />
-  </>
-);
+      <EditInitiativeModal
+        open={showEditModal}
+        initiative={selectedInitiative}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleEditInitiative}
+      />
+    </>
+  );
 }

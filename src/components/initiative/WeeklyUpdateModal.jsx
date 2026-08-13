@@ -28,7 +28,6 @@ export default function WeeklyUpdateModal({
     next_steps: nextSteps,
   };
 
-  console.log(payload);
 
   await onSave(payload);
 

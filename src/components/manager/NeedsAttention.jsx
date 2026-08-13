@@ -7,8 +7,11 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
-
-import { IconAlertTriangle, IconLock } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconLock,
+  IconClock,
+} from "@tabler/icons-react";
 
 import { useInitiative } from "../../context/InitiativeContext";
 
@@ -16,10 +19,16 @@ export default function NeedsAttention({ attention = [] }) {
   const { setSelectedInitiative } = useInitiative();
 
   return (
-    <Card withBorder radius="md" padding="lg">
-      <Group justify="space-between" mb="lg">
+    <Card
+      withBorder
+      radius="md"
+      padding="lg"
+    >
+      <Group justify="space-between" align="flex-start">
         <div>
-          <Title order={4}>Needs Attention</Title>
+          <Title order={3}>
+            Needs Attention
+          </Title>
 
           <Text size="sm" c="dimmed" mt={3}>
             Initiatives requiring intervention
@@ -32,13 +41,19 @@ export default function NeedsAttention({ attention = [] }) {
           color={attention.length > 0 ? "red" : "green"}
           variant="light"
         >
-          {attention.length} {attention.length === 1 ? "item" : "items"}
+          {attention.length}{" "}
+          {attention.length === 1 ? "item" : "items"}
         </Badge>
       </Group>
 
       {attention.length === 0 ? (
-        <Group gap="sm">
-          <ThemeIcon color="green" variant="light" size={36} radius="md">
+        <Group gap="sm" mt="lg">
+          <ThemeIcon
+            color="green"
+            variant="light"
+            size={36}
+            radius="md"
+          >
             <IconAlertTriangle size={18} />
           </ThemeIcon>
 
@@ -48,22 +63,29 @@ export default function NeedsAttention({ attention = [] }) {
             </Text>
 
             <Text size="xs" c="dimmed">
-              No overdue or blocked initiatives.
+              No overdue initiatives.
             </Text>
           </div>
         </Group>
       ) : (
-        <Stack gap="sm">
+        <Stack gap="sm" mt="lg">
           {attention.map((item, index) => {
-            const initiative = item.initiative;
+  const initiative = item.initiative;
 
-            const isOverdue = item.type === "Overdue";
+  let color = "red";
+  let Icon = IconAlertTriangle;
 
-            const color = isOverdue ? "red" : "orange";
+  if (item.type === "Blocked") {
+    color = "orange";
+    Icon = IconLock;
+  }
 
-            const Icon = isOverdue ? IconAlertTriangle : IconLock;
+  if (item.type === "Stalled") {
+    color = "yellow";
+    Icon = IconClock;
+  }
 
-            return (
+  return (
               <Card
                 key={`${initiative?.id}-${index}`}
                 withBorder
@@ -75,11 +97,15 @@ export default function NeedsAttention({ attention = [] }) {
                   }
                 }}
                 style={{
-                  cursor: initiative ? "pointer" : "default",
+                  cursor: initiative
+                    ? "pointer"
+                    : "default",
                 }}
-                className="transition hover:shadow-md"
               >
-                <Group align="flex-start" wrap="nowrap">
+                <Group
+                  align="flex-start"
+                  wrap="nowrap"
+                >
                   <ThemeIcon
                     color={color}
                     variant="light"
@@ -90,17 +116,30 @@ export default function NeedsAttention({ attention = [] }) {
                   </ThemeIcon>
 
                   <div className="flex-1 min-w-0">
-                    <Group justify="space-between" align="flex-start" gap="sm">
+                    <Group
+                      justify="space-between"
+                      align="flex-start"
+                      gap="sm"
+                    >
                       <Text fw={600} size="sm">
-                        {initiative?.title ?? "Untitled initiative"}
+                        {initiative?.title ??
+                          "Untitled initiative"}
                       </Text>
 
-                      <Badge color={color} variant="light" size="sm">
+                      <Badge
+                        color={color}
+                        variant="light"
+                        size="sm"
+                      >
                         {item.type}
                       </Badge>
                     </Group>
 
-                    <Text size="sm" c="dimmed" mt={5}>
+                    <Text
+                      size="sm"
+                      c="dimmed"
+                      mt={5}
+                    >
                       {item.reason}
                     </Text>
                   </div>

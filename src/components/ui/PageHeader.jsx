@@ -4,10 +4,9 @@ export default function PageHeader({
   actions,
 }) {
   return (
-    <div className="flex items-start justify-between mb-8">
+    <div className="flex items-start justify-between gap-6 w-full">
 
-      <div>
-
+      <div className="min-w-0">
         <h1 className="text-3xl font-bold tracking-tight text-white">
           {title}
         </h1>
@@ -17,11 +16,10 @@ export default function PageHeader({
             {subtitle}
           </p>
         )}
-
       </div>
 
       {actions && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           {actions}
         </div>
       )}

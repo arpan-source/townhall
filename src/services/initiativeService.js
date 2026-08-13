@@ -34,10 +34,13 @@ export async function updateInitiative(id, data) {
 }
 
 export async function deleteInitiative(id) {
-  return await supabase
+  const result = await supabase
     .from("initiatives")
     .delete()
     .eq("id", id);
+
+
+  return result;
 }
 
 export async function updateInitiativeProgress(
@@ -63,4 +66,56 @@ export async function updateInitiativeProgress(
     })
     .eq("id", id);
 
+}
+
+export async function getInitiativesWithLatestUpdates() {
+  const { data, error } = await supabase
+    .from("initiatives")
+    .select(`
+      *,
+      initiative_updates (
+        id,
+        message,
+        blockers,
+        progress,
+        created_at,
+        user_id
+      )
+    `)
+    .order("created_at", {
+      referencedTable: "initiative_updates",
+      ascending: false,
+    });
+
+  if (error) {
+    console.error(
+      "Failed to fetch initiatives with updates:",
+      error
+    );
+
+    return {
+      data: null,
+      error,
+    };
+  }
+
+  const initiativesWithLatestUpdate = data.map(
+    (initiative) => {
+      const updates =
+        initiative.initiative_updates || [];
+
+      return {
+        ...initiative,
+        latestUpdate:
+          updates.length > 0
+            ? updates[0]
+            : null,
+      };
+    }
+  );
+
+  return {
+    data: initiativesWithLatestUpdate,
+    error: null,
+  };
 }
