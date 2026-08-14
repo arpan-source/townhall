@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export const AuthContext = createContext();
@@ -10,18 +10,17 @@ export function AuthProvider({ children }) {
 
   async function fetchProfile(userId) {
     const { data, error } = await supabase
-  .from("profiles")
-  .select("*")
-  .eq("id", userId)
-  .single();
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-console.log(error);
+    if (error) {
+      console.error("Profile fetch failed:", error);
+      setProfile(null);
+      return;
+    }
 
-const {
-  data: { user },
-} = await supabase.auth.getUser();
-
-    
     setProfile(data);
   }
 
@@ -43,38 +42,96 @@ const {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-    });
-   
+    } = supabase.auth.onAuthStateChange(
+      async (_, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+
+        setLoading(false);
+      },
+    );
+
     return () => subscription.unsubscribe();
   }, []);
 
-//   async function login(email, password) {
-//     return await supabase.auth.signInWithPassword({
-//       email,
-//       password,
-//     });
-//   }
-async function login(email, password) {
+  async function login(email, password) {
+    return await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+  }
 
-  const result = await supabase.auth.signInWithPassword({
+  async function signup(
     email,
     password,
-  });
+    fullName,
+  ) {
+    const {
+      data,
+      error,
+    } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
 
+    if (error) {
+      return {
+        data,
+        error,
+      };
+    }
 
-  return result;
-}
+    return {
+      data,
+      error: null,
+    };
+  }
 
   async function logout() {
-    await supabase.auth.signOut();
+    const { error } =
+      await supabase.auth.signOut();
+
+    if (error) {
+      console.error(
+        "Logout failed:",
+        error
+      );
+
+      return error;
+    }
+
+    setUser(null);
+    setProfile(null);
+
+    return null;
+  }
+
+  async function resetPassword(email) {
+    return await supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo:
+          `${window.location.origin}/reset-password`,
+      },
+    );
+  }
+
+  async function updatePassword(
+    newPassword,
+  ) {
+    return await supabase.auth.updateUser({
+      password: newPassword,
+    });
   }
 
   return (
@@ -84,7 +141,10 @@ async function login(email, password) {
         profile,
         loading,
         login,
+        signup,
         logout,
+        resetPassword,
+        updatePassword,
       }}
     >
       {children}

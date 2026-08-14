@@ -12,11 +12,10 @@ export default function Sidebar({ items }) {
           <NavLink
             key={item.path}
             to={item.path}
+            end
             className={({ isActive }) =>
               `block rounded-lg px-4 py-3 transition ${
-                isActive
-                  ? "bg-indigo-600"
-                  : "hover:bg-slate-800"
+                isActive ? "bg-indigo-600" : "hover:bg-slate-800"
               }`
             }
           >

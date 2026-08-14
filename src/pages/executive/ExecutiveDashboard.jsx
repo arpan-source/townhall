@@ -5,10 +5,11 @@ import PageHeader from "../../components/ui/PageHeader";
 import ExecutiveBrief from "../../components/executive/ExecutiveBrief";
 import KPIGrid from "../../components/executive/KPIGrid";
 import NeedsAttention from "../../components/executive/NeedsAttention";
-import DepartmentHealth from "../../components/executive/DepartmentHealth";
+import ManagerPerformance from "../../components/executive/ManagerPerformance";
 import RecentActivity from "../../components/executive/RecentActivity";
 import InitiativeDrawer from "../../components/initiative/InitiativeDrawer";
 import ExecutiveInitiatives from "../../components/executive/ExecutiveInitiatives";
+import { getManagerPerformance } from "../../services/managerService";
 
 import { getDashboardStats } from "../../services/dashboardService";
 
@@ -24,6 +25,10 @@ const sidebar = [
   {
     label: "Reports",
     path: "/executive/reports",
+  },
+  {
+    label: "User Management",
+    path: "/executive/users",
   },
 ];
 
@@ -68,6 +73,18 @@ export default function ExecutiveDashboard() {
     }
 
     loadDashboard();
+  }, []);
+
+  useEffect(() => {
+    async function testManagers() {
+      const { data, error } = await getManagerPerformance();
+
+      console.log("MANAGER PERFORMANCE:", JSON.stringify(data, null, 2));
+
+      console.log("MANAGER PERFORMANCE ERROR:", error);
+    }
+
+    testManagers();
   }, []);
 
   const activities =
@@ -116,10 +133,10 @@ export default function ExecutiveDashboard() {
               onTotalClick={scrollToInitiatives}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <NeedsAttention attention={dashboard?.attention} />
 
-              <DepartmentHealth departments={dashboard?.departments} />
+              <ManagerPerformance />
             </div>
 
             <div ref={initiativesRef}>
