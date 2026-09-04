@@ -28,11 +28,6 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-    if (profile?.is_active === false) {
-      navigate("/pending-approval");
-      return;
-    }
-
     navigate("/dashboard");
   }
 

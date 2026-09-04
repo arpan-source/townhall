@@ -19,6 +19,10 @@ const sidebar = [
     path: "/executive",
   },
   {
+  label: "Campaign Performance",
+  path: "/executive/campaigns",
+},
+  {
     label: "Departments",
     path: "/executive/departments",
   },
@@ -30,6 +34,7 @@ const sidebar = [
     label: "User Management",
     path: "/executive/users",
   },
+  
 ];
 
 export default function ExecutiveDashboard() {

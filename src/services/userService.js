@@ -26,16 +26,31 @@ export async function getPendingUsers() {
 export async function approveUser(
   userId,
   role,
+  departmentId = null,
+  campaignRole = null,
 ) {
   const { data, error } = await supabase
     .from("profiles")
     .update({
       role,
+      department_id: departmentId,
+      campaign_role: campaignRole,
       is_active: true,
     })
     .eq("id", userId)
     .select()
     .single();
+
+  return { data, error };
+}
+
+export async function getDepartments() {
+  const { data, error } = await supabase
+    .from("departments")
+    .select("id, name")
+    .order("name", {
+      ascending: true,
+    });
 
   return {
     data,
