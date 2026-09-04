@@ -50,9 +50,26 @@ export default function RoleRouter() {
     case "CEO":
       return <ExecutiveDashboard />;
 
-    case "Manager":
-      return <ManagerDashboard />;
+case "Manager": {
+  const departmentName = profile.departments?.name;
+  const campaignRole = profile.campaign_role;
 
+  if (
+    departmentName === "Campaign Operations" &&
+    campaignRole === "CALLING"
+  ) {
+    return <Navigate to="/manager/campaigns" replace />;
+  }
+
+  if (
+    departmentName === "Campaign Operations" &&
+    campaignRole === "OPS"
+  ) {
+    return <Navigate to="/manager/campaign-ops" replace />;
+  }
+
+  return <ManagerDashboard />;
+}
     case "Employee":
       return (
         <div className="p-10 text-white">

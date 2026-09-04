@@ -11,6 +11,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import ExecutiveDashboard from "../pages/executive/ExecutiveDashboard";
 import Reports from "../pages/executive/Reports";
 
+import Campaigns from "../pages/manager/Campaigns";
+import CampaignPerformance from "../pages/executive/CampaignPerformance";
+
 export function AppRouter() {
   return (
     <Routes>
@@ -49,6 +52,25 @@ export function AppRouter() {
         element={
           <ProtectedRoute allowedRoles={["CEO"]}>
             <Reports />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+  path="/executive/campaigns"
+  element={
+    <ProtectedRoute allowedRoles={["CEO"]}>
+      <CampaignPerformance />
+    </ProtectedRoute>
+  }
+/>
+
+      {/* Manager - Campaigns */}
+      <Route
+        path="/manager/campaigns"
+        element={
+          <ProtectedRoute allowedRoles={["Manager"]}>
+            <Campaigns />
           </ProtectedRoute>
         }
       />

@@ -16,6 +16,7 @@ import {
 import AppLayout from "../../layouts/AppLayout";
 import {
   getPendingUsers,
+  getDepartments,
   approveUser,
 } from "../../services/userService";
 
@@ -23,8 +24,8 @@ export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [processingId, setProcessingId] =
-    useState(null);
+  const [processingId, setProcessingId] = useState(null);
+  const [departments, setDepartments] = useState([]);
 
   const sidebar = [
     {
@@ -45,47 +46,58 @@ export default function UserManagement() {
     },
   ];
 
-  async function loadUsers() {
-    setLoading(true);
-    setError("");
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      setError("");
 
-    const {
-      data,
-      error,
-    } = await getPendingUsers();
+      const [usersResult, departmentsResult] = await Promise.all([
+        getPendingUsers(),
+        getDepartments(),
+      ]);
 
-    if (error) {
-      console.error(
-        "Pending users error:",
-        error,
-      );
+      if (usersResult.error) {
+        console.error(
+          "Pending users error:",
+          usersResult.error,
+        );
 
-      setError(
-        "Unable to load pending users.",
-      );
-    } else {
-      setUsers(data || []);
+        setError("Unable to load pending users.");
+      } else {
+        setUsers(usersResult.data || []);
+      }
+
+      if (departmentsResult.error) {
+        console.error(
+          "Departments error:",
+          departmentsResult.error,
+        );
+
+        setError("Unable to load departments.");
+      } else {
+        setDepartments(departmentsResult.data || []);
+      }
+
+      setLoading(false);
     }
 
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    loadUsers();
+    loadData();
   }, []);
 
   async function handleApprove(
     userId,
     role,
+    departmentId,
+    campaignRole,
   ) {
     setProcessingId(userId);
     setError("");
 
-    const {
-      error,
-    } = await approveUser(
+    const { error } = await approveUser(
       userId,
       role,
+      departmentId,
+      campaignRole,
     );
 
     if (error) {
@@ -94,9 +106,7 @@ export default function UserManagement() {
         error,
       );
 
-      setError(
-        "Unable to approve this user.",
-      );
+      setError("Unable to approve this user.");
 
       setProcessingId(null);
       return;
@@ -104,8 +114,7 @@ export default function UserManagement() {
 
     setUsers((current) =>
       current.filter(
-        (user) =>
-          user.id !== userId,
+        (user) => user.id !== userId,
       ),
     );
 
@@ -115,17 +124,12 @@ export default function UserManagement() {
   return (
     <AppLayout sidebarItems={sidebar}>
       <Stack gap="xl">
-
         <div>
           <Title order={1}>
             User Management
           </Title>
 
-          <Text
-            size="sm"
-            c="dimmed"
-            mt={4}
-          >
+          <Text size="sm" c="dimmed" mt={4}>
             Review and approve TownHall accounts.
           </Text>
         </div>
@@ -225,9 +229,9 @@ export default function UserManagement() {
                   <PendingUserRow
                     key={user.id}
                     user={user}
+                    departments={departments}
                     processing={
-                      processingId ===
-                      user.id
+                      processingId === user.id
                     }
                     onApprove={
                       handleApprove
@@ -245,13 +249,69 @@ export default function UserManagement() {
 
 function PendingUserRow({
   user,
+  departments,
   processing,
   onApprove,
 }) {
+  const [selectedRole, setSelectedRole] =
+    useState("Manager");
+
   const [
-    selectedRole,
-    setSelectedRole,
-  ] = useState("Manager");
+    selectedDepartment,
+    setSelectedDepartment,
+  ] = useState(null);
+
+  const [
+    selectedCampaignRole,
+    setSelectedCampaignRole,
+  ] = useState(null);
+
+  const isManager =
+    selectedRole === "Manager";
+
+  const isCampaignOperations =
+    departments.find(
+      (department) =>
+        department.id ===
+        selectedDepartment,
+    )?.name === "Campaign Operations";
+
+  const requiresCampaignRole =
+    isManager && isCampaignOperations;
+
+  function handleRoleChange(value) {
+    const role = value || "Manager";
+
+    setSelectedRole(role);
+
+    if (role !== "Manager") {
+      setSelectedDepartment(null);
+      setSelectedCampaignRole(null);
+    }
+  }
+
+  function handleDepartmentChange(value) {
+    setSelectedDepartment(value);
+
+    const departmentName =
+      departments.find(
+        (department) =>
+          department.id === value,
+      )?.name;
+
+    if (
+      departmentName !==
+      "Campaign Operations"
+    ) {
+      setSelectedCampaignRole(null);
+    }
+  }
+
+  const canApprove =
+    selectedRole &&
+    (isManager ? selectedDepartment : true) &&
+    (!requiresCampaignRole ||
+      selectedCampaignRole);
 
   return (
     <Table.Tr>
@@ -281,14 +341,11 @@ function PendingUserRow({
       </Table.Td>
 
       <Table.Td>
-        <Group gap="sm">
+        <Group gap="sm" wrap="wrap">
+          {/* ROLE */}
           <Select
             value={selectedRole}
-            onChange={(value) =>
-              setSelectedRole(
-                value || "Manager",
-              )
-            }
+            onChange={handleRoleChange}
             data={[
               {
                 value: "Manager",
@@ -299,19 +356,77 @@ function PendingUserRow({
                 label: "Employee",
               },
             ]}
-            w={140}
+            w={130}
             disabled={processing}
           />
 
+          {/* DEPARTMENT */}
+          <Select
+            placeholder="Department"
+            value={selectedDepartment}
+            onChange={
+              handleDepartmentChange
+            }
+            data={departments.map(
+              (department) => ({
+                value: department.id,
+                label: department.name,
+              }),
+            )}
+            w={190}
+            searchable
+            clearable={!isManager}
+            disabled={
+              processing ||
+              !isManager
+            }
+            required={isManager}
+          />
+
+          {/* CAMPAIGN ROLE */}
+          {requiresCampaignRole && (
+            <Select
+              label="Campaign Role"
+              placeholder="Select role"
+              value={selectedCampaignRole}
+              onChange={
+                setSelectedCampaignRole
+              }
+              data={[
+                {
+                  value: "OPS",
+                  label: "Campaign Ops",
+                },
+                {
+                  value: "CALLING",
+                  label: "Campaign Calling",
+                },
+              ]}
+              w={180}
+              disabled={processing}
+              required
+            />
+          )}
+
+          {/* APPROVE */}
           <Button
             size="sm"
-            onClick={() =>
+            onClick={() => {
+              if (!canApprove) {
+                return;
+              }
+
               onApprove(
                 user.id,
                 selectedRole,
-              )
-            }
+                selectedDepartment,
+                selectedCampaignRole,
+              );
+            }}
             loading={processing}
+            disabled={
+              processing || !canApprove
+            }
           >
             Approve
           </Button>
